@@ -1,5 +1,3 @@
-
-
 import csv
 from time import sleep
 from msedge.selenium_tools import Edge, EdgeOptions
@@ -9,13 +7,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.common import exceptions
 
-
 def create_webdriver_instance():
     options = EdgeOptions()
     options.use_chromium = True
     driver = Edge(options=options)
     return driver
-
 
 def login_to_twitter(username, password, driver):
     url = 'https://twitter.com/login'
@@ -39,7 +35,6 @@ def login_to_twitter(username, password, driver):
         print("Timeout while waiting for home screen")
     return True
 
-
 def find_search_input_and_enter_criteria(search_term, driver):
     xpath_search = '//input[@aria-label="Search query"]'
     search_input = driver.find_element_by_xpath(xpath_search)
@@ -47,17 +42,14 @@ def find_search_input_and_enter_criteria(search_term, driver):
     search_input.send_keys(Keys.RETURN)
     return True
 
-
 def change_page_sort(tab_name, driver):
     """Options for this program are `Latest` and `Top`"""
     tab = driver.find_element_by_link_text(tab_name)
     tab.click()
     xpath_tab_state = f'//a[contains(text(),\"{tab_name}\") and @aria-selected=\"true\"]'
 
-
 def generate_tweet_id(tweet):
     return ''.join(tweet)
-
 
 def scroll_down_page(driver, last_position, num_seconds_to_load=0.5, scroll_attempt=0, max_attempts=5):
     """The function will try to scroll down the page and will check the current
@@ -72,10 +64,9 @@ def scroll_down_page(driver, last_position, num_seconds_to_load=0.5, scroll_atte
         if scroll_attempt < max_attempts:
             end_of_scroll_region = True
         else:
-            scroll_down_page(last_position, curr_position, scroll_attempt + 1)
+            last_position, end_of_scroll_region = scroll_down_page(driver, last_position, scroll_attempt=scroll_attempt + 1)
     last_position = curr_position
     return last_position, end_of_scroll_region
-
 
 def save_tweet_data_to_csv(records, filepath, mode='a+'):
     header = ['User', 'Handle', 'PostDate', 'TweetText', 'ReplyCount', 'RetweetCount', 'LikeCount']
@@ -86,9 +77,8 @@ def save_tweet_data_to_csv(records, filepath, mode='a+'):
         if records:
             writer.writerow(records)
 
-
 def collect_all_tweets_from_current_view(driver, lookback_limit=25):
-    """The page is continously loaded, so as you scroll down the number of tweets returned by this function will
+    """The page is continuously loaded, so as you scroll down the number of tweets returned by this function will
      continue to grow. To limit the risk of 're-processing' the same tweet over and over again, you can set the
      `lookback_limit` to only process the last `x` number of tweets extracted from the page in each iteration.
      You may need to play around with this number to get something that works for you. I've set the default
@@ -98,7 +88,6 @@ def collect_all_tweets_from_current_view(driver, lookback_limit=25):
         return page_cards
     else:
         return page_cards[-lookback_limit:]
-
 
 def extract_data_from_current_tweet_card(card):
     try:
@@ -112,12 +101,6 @@ def extract_data_from_current_tweet_card(card):
     except exceptions.NoSuchElementException:
         handle = ""
     try:
-        """
-        If there is no post date here, there it is usually sponsored content, or some
-        other form of content where post dates do not apply. You can set a default value
-        for the postdate on Exception if you which to keep this record. By default I am
-        excluding these.
-        """
         postdate = card.find_element_by_xpath('.//time').get_attribute('datetime')
     except exceptions.NoSuchElementException:
         return
@@ -145,7 +128,6 @@ def extract_data_from_current_tweet_card(card):
 
     tweet = (user, handle, postdate, tweet_text, reply_count, retweet_count, like_count)
     return tweet
-
 
 def main(username, password, search_term, filepath, page_sort='Latest'):
     save_tweet_data_to_csv(None, filepath, 'w')  # create file for saving records
@@ -179,7 +161,6 @@ def main(username, password, search_term, filepath, page_sort='Latest'):
                 save_tweet_data_to_csv(tweet, filepath)
         last_position, end_of_scroll_region = scroll_down_page(driver, last_position)
     driver.quit()
-
 
 if __name__ == '__main__':
     usr = "email@gmail.com"
